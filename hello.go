@@ -5,7 +5,11 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"time"
 )
+
+const monitoramentos = 3
+const delay = 5
 
 func main() {
 	hello()
@@ -52,6 +56,7 @@ func lerComando() int8 {
 
 	fmt.Println("Endereço de memoria", &comando)
 	fmt.Println("O comando escolhido foi", comando)
+	fmt.Println("")
 	return comando
 }
 
@@ -64,24 +69,32 @@ func menu() {
 func iniciarMonitoramento() {
 	fmt.Println("Monitorando...")
 	// var sites [4]string // tamanho fixo
-	sites := []string{"https://os.redezone.com.br", "https://monitoramento.redezone.com.br", "https://iot.redezone.com.br"}
+	sites := []string{"https://os.redezone.com.br", "https://energia.redezone.com.br", "https://iot.redezone.com.br"}
 
-	fmt.Println(sites)
-	site := "https://os.redezone.com.br"
+	for i := 0; i < monitoramentos; i++ {
+
+		for i, site := range sites {
+
+			fmt.Println("Testando site", i, ":", site)
+			testaSite(site)
+		}
+
+		time.Sleep(delay * time.Second)
+		fmt.Println("")
+		fmt.Println("")
+	}
+
+	fmt.Println("")
+
+}
+
+func testaSite(site string) {
+
 	resp, _ := http.Get(site)
 
-	fmt.Println(resp)
-
-	// for i := 0; i < len(sites); i++ {
-	for i, site := range sites {
-
-		fmt.Println("posição: ", i, " site: ", site)
-	}
-
 	if resp.StatusCode == 200 {
-		fmt.Println("site on")
+		fmt.Println("Site:", site, "foi carregado com sucesso!")
 	} else {
-		fmt.Println("site com problemas: ", resp.StatusCode)
+		fmt.Println("Site:", site, "está com problemas. Status Code:", resp.StatusCode)
 	}
-
 }
