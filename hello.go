@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -13,7 +16,7 @@ const delay = 5
 
 func main() {
 	hello()
-
+	leSitesDoArquivo()
 	for {
 		menu()
 		comando := lerComando()
@@ -69,7 +72,8 @@ func menu() {
 func iniciarMonitoramento() {
 	fmt.Println("Monitorando...")
 	// var sites [4]string // tamanho fixo
-	sites := []string{"https://os.redezone.com.br", "https://energia.redezone.com.br", "https://iot.redezone.com.br"}
+	// sites := []string{"https://os.redezone.com.br", "https://energia.redezone.com.br", "https://iot.redezone.com.br"}
+	sites := leSitesDoArquivo()
 
 	for i := 0; i < monitoramentos; i++ {
 
@@ -90,11 +94,53 @@ func iniciarMonitoramento() {
 
 func testaSite(site string) {
 
-	resp, _ := http.Get(site)
+	resp, err := http.Get(site)
+
+	if err != nil {
+		fmt.Println("Ocorreu um erro no site: ", site, "\n", err)
+	}
 
 	if resp.StatusCode == 200 {
 		fmt.Println("Site:", site, "foi carregado com sucesso!")
 	} else {
 		fmt.Println("Site:", site, "está com problemas. Status Code:", resp.StatusCode)
 	}
+}
+
+func leSitesDoArquivo() []string {
+
+	var sites []string
+
+	// retorna o endereço de memoria que contem o arquivo
+	arquivo, err := os.Open("sites.txt") // &{0xc00007a1e0}
+
+	// retorna um array de bytes
+	// arquivo, err := ioutil.ReadFile("sites.txt") /*[104 116 116 112 115 58 47 47 111 115 46 114 101 100 101 122 111 110 101 46 99 111 109 46 98 114 10 104 116 116 112 115 58 47 47 101 110 101 114 103 105 97 46 114 101 100 101 122 111 110 101 46 99 111 109 46 98 114 32 10 104 116 116 112 115 58 47 47 105 111 116 46 114 101 100 101 122 111 110 101 46 99 111 109 46 98 114]*/
+
+	if err != nil {
+		fmt.Println("Ocorreu um erro: \n", err)
+		return []string{}
+	}
+
+	leitor := bufio.NewReader(arquivo)
+
+	for {
+		linha, err := leitor.ReadString('\n') // ler ate a quebra de linha usar '', "eh string"
+		// remover espaços e quebra linhas
+		linha = strings.TrimSpace(linha)
+
+		sites = append(sites, linha)
+
+		fmt.Println(linha)
+		if err == io.EOF {
+			fmt.Println("Ocorreu um erro:", err)
+			break
+		}
+
+	}
+	arquivo.Close()
+
+	// fmt.Println(string(arquivo))
+	fmt.Println(sites)
+	return sites
 }
