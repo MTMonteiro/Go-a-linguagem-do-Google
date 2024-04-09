@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
@@ -30,7 +31,8 @@ func main() {
 			iniciarMonitoramento()
 
 		case 2:
-			fmt.Println("Exibindo logs")
+			fmt.Println("Exibindo Logs...")
+			imprimeLogs()
 		default:
 			fmt.Println("Comando desconhecido!")
 			os.Exit(-1)
@@ -162,7 +164,21 @@ func registraLog(site string, status bool) {
 	}
 
 	// strconv.FormatBool - convert boolean to string
-	arquivo.WriteString(site + " - online: " + strconv.FormatBool(status) + "\n")
+	// formatar data é pelo codigo da informação
+	//"02/01/2006 15:04:05" == dd/mm/yyyy HH:mm:ss
+	arquivo.WriteString(time.Now().Format("02/01/2006 15:04:05") + " - " + site + " - online: " + strconv.FormatBool(status) + "\n")
 
 	arquivo.Close()
+}
+
+func imprimeLogs() {
+
+	// nao precisa fechar arquivo com ioutil
+	arquivo, err := ioutil.ReadFile("log.txt")
+
+	if err != nil {
+		fmt.Println("Ocorreu um erro:", err)
+	}
+
+	fmt.Println(string(arquivo))
 }
